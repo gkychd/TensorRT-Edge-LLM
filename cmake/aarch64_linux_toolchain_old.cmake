@@ -21,17 +21,10 @@ set(CMAKE_SYSTEM_NAME Linux)
 # 设置目标处理器架构为 aarch64 (ARM64)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
-# 设置初始路径
-set(PLATFORM_ROOT /data/workspace/Orinx/Parking_master/platform)
-set(PLATFORM_COMPILER ${PLATFORM_ROOT}/ThorU_rootfs/toolchain/aarch64--glibc--bleeding-edge-2024.02-1)
-set(PLATFORM_CUDA_PATH ${PLATFORM_ROOT}/ThorU_rootfs/compile_dependences/cuda)
-message(STATUS "PLATFORM_ROOT: ${PLATFORM_ROOT}")
-message(STATUS "PLATFORM_COMPILER: ${PLATFORM_COMPILER}")
-message(STATUS "PLATFORM_CUDA_PATH: ${PLATFORM_CUDA_PATH}")
 # 指定交叉编译器路径
 # aarch64-linux-gnu-gcc/g++ 是用于 ARM64 目标的 GCC 交叉编译器
-set(CMAKE_C_COMPILER ${PLATFORM_COMPILER}/bin/aarch64-linux-gcc)
-set(CMAKE_CXX_COMPILER ${PLATFORM_COMPILER}/bin/aarch64-linux-g++)
+set(CMAKE_C_COMPILER /usr/bin/aarch64-linux-gnu-gcc)
+set(CMAKE_CXX_COMPILER /usr/bin/aarch64-linux-gnu-g++)
 
 # 设置编译器目标为 aarch64-linux-gnu
 # 这告诉编译器生成 ARM64 架构的代码
@@ -41,7 +34,7 @@ set(CMAKE_CXX_COMPILER_TARGET aarch64-linux-gnu)
 # ========== CUDA 交叉编译配置 ==========
 
 # 指定 CUDA 编译器 (nvcc) 路径
-set(CMAKE_CUDA_COMPILER ${PLATFORM_CUDA_PATH}/bin/nvcc)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 # 设置 nvcc 的主机编译器为前面定义的交叉编译器
 set(CMAKE_CUDA_HOST_COMPILER
     ${CMAKE_CXX_COMPILER}
@@ -86,10 +79,10 @@ if("${EMBEDDED_TARGET}" STREQUAL "auto-thor")
     set(CMAKE_CUDA_ARCHITECTURES 110)
   endif()
   set(CUDA_DIR
-      ${PLATFORM_CUDA_PATH}/targets/aarch64-linux
+      /usr/local/cuda/targets/aarch64-linux
       CACHE STRING "CUDA toolkit dir")
   set(CUDA_TARGET_DIR
-      ${PLATFORM_CUDA_PATH}/thor/targets/aarch64-linux
+      /usr/local/cuda/thor/targets/aarch64-linux
       CACHE STRING "CUDA toolkit target dir")
   message(STATUS "Using CUDA toolkit dir: ${CUDA_DIR}")
 

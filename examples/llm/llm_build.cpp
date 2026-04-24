@@ -96,6 +96,16 @@ void printUsage(char const* programName)
 
 bool parseLLMBuildArgs(LLMBuildArgs& args, int argc, char* argv[])
 {
+    // struct option
+    // {
+    //     char const* name; // 选项名（如 "onnxDir"）
+    //     int has_arg;      // 是否需要参数
+    //     int* flag;        // 通常为 nullptr
+    //     int val;          // 返回值/选项 ID
+    // };
+
+    //这里表示构建getopt_long需要的映射表，当匹配到选项，getopt_long会返回选项的val值（由opt接收，对应的值由optarg接收）
+    //{0,0,0,0}全0数组表示结尾
     static struct option buildOptions[] = {{"help", no_argument, 0, LLMBuildOptionId::HELP},
         {"onnxDir", required_argument, 0, LLMBuildOptionId::ONNX_DIR},
         {"engineDir", required_argument, 0, LLMBuildOptionId::ENGINE_DIR},
@@ -185,6 +195,7 @@ bool parseLLMBuildArgs(LLMBuildArgs& args, int argc, char* argv[])
 int main(int argc, char** argv)
 {
     LLMBuildArgs args;
+    //相当于把argv转换成LLMBuildArgs
     if ((argc < 2) || (!parseLLMBuildArgs(args, argc, argv)))
     {
         LOG_ERROR("Unable to parse builder args.");

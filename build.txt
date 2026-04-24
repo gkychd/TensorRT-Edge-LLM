@@ -1,0 +1,10 @@
+#x86
+/data/workspace/llm/cmake-3.24.0/bin/cmake .. -DCMAKE_BUILD_TYPE=Release -DTRT_PACKAGE_DIR=/data/orinx_docker/Tensorrt-10.10/TensorRT-10.10.0.31 -DCUDA_CTK_VERSION=12.1
+
+#thorU
+/data/workspace/llm/cmake-3.24.0/bin/cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTRT_PACKAGE_DIR=/data/orinx_docker/arm/TensorRT-10.10.0.31 \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64_linux_toolchain.cmake \
+    -DEMBEDDED_TARGET=auto-thor \
+    -DCUDA_CTK_VERSION=12.8

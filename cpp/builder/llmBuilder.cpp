@@ -152,6 +152,7 @@ bool LLMBuilder::build()
     }
 
     // Copy files and save builder config
+    // 将模型运行所需的辅助文件复制到引擎目录
     if (!copyConfig())
     {
         return false;
