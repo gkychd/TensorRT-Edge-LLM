@@ -584,6 +584,8 @@ def int4_dq_gemm_to_plugin(graph: gs.Graph) -> gs.Graph:
     patch_gs_modules()
 
     # Find all DequantizeLinear nodes
+    # 这里有个细节，为什么要先找到所有的DequantizeLinear节点放到dequantize_nodes中？
+    # 如果边遍历变修改删除的话会导致迭代器失效，如果在遍历过程中创建新的节点，可能导致无限循环。
     dequantize_nodes = []
     for node in graph.nodes:
         if node.op == "DequantizeLinear":
@@ -671,7 +673,10 @@ def int4_dq_gemm_to_plugin(graph: gs.Graph) -> gs.Graph:
 
         # Remove the old nodes and their connections
         # Remove connections from input to MatMul
+        # 相当于断了matmul_node的两个输入和一个输出的连接，其中一个输入连接又是dequantize_node的输出连接，而dequantize_node的输入连接是常数，不需要断
+        # plugin_input.outputs = [matmul_node]，调用remove(matmul_node)，则变成了plugin_input.outputs = []，相当于断开连接
         plugin_input.outputs.remove(matmul_node)
+        # dequantize_node.outputs[0]是输出张量，dequantize_node.outputs[0].outputs才是[matmul_node]
         dequantize_node.outputs[0].outputs.remove(matmul_node)
         matmul_node.outputs[0].inputs.remove(matmul_node)
 

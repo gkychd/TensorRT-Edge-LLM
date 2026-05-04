@@ -229,15 +229,11 @@ def export_onnx(model,
     '''
     t0 = time.time()
     os.makedirs(output_dir, exist_ok=True)
-    # 第一次导出的原始 ONNX（保留）
-    onnx_path_raw = f'{output_dir}/model_raw.onnx'
-    # 处理后保存的 ONNX
     onnx_path = f'{output_dir}/model.onnx'
     with torch.inference_mode():
-        # 使用 external data 方式，权重存到 model_raw.onnx.data
         torch.onnx.export(model,
                           inputs,
-                          onnx_path_raw,
+                          onnx_path,
                           export_params=True,
                           dynamic_axes=dynamic_axes,
                           input_names=input_names,
@@ -248,9 +244,9 @@ def export_onnx(model,
                           dynamo=False)
     t1 = time.time()
     print(f"ONNX export completed in {t1 - t0}s. Apply post-processing...")
-    # 从原始文件读取进行后处理
-    onnx.shape_inference.infer_shapes_path(onnx_path_raw)
-    onnx_model = onnx.load(onnx_path_raw)
+    # Post-processing
+    onnx.shape_inference.infer_shapes_path(onnx_path)
+    onnx_model = onnx.load(onnx_path)
     graph = None
 
     if is_int4_awq_quantized(model):
@@ -260,34 +256,7 @@ def export_onnx(model,
         onnx_model = quantize_weights_to_int4(onnx_model)
         # Fix the Cast nodes and hidden_states output types for INT4 models
         onnx_model = fix_model_int4_output_dtypes(onnx_model)
-        # 为 model_before_plugin.onnx 添加 Add/Concat 相关的 Cast → FP16 处理
-        print("Applying Cast->FP16 fix for Add/Concat nodes in model_before_plugin...")
-        graph_for_fix = gs.import_onnx(onnx_model)
-        for node in [n for n in graph_for_fix.nodes if n.op in ["Add", "Concat"]]:
-            for inp in node.inputs:
-                if not isinstance(inp, gs.Constant):#非常量才改
-                    #将add的输入该为fp16
-                    inp.dtype = onnx.TensorProto.FLOAT16
-                    # 如果输入是 Cast 节点，则更新 Cast 节点的 to 属性
-                    if len(inp.inputs) == 1 and inp.inputs[0].op == "Cast":
-                        cast_node = inp.inputs[0]
-                        cast_node.attrs["to"] = onnx.TensorProto.FLOAT16
-            for out in node.outputs:
-                out.dtype = onnx.TensorProto.FLOAT16
-        onnx_model = gs.export_onnx(graph_for_fix)
-        # 保存 int4_dq_gemm_to_plugin 之前的 ONNX
-        onnx_path_before_plugin = f'{output_dir}/model_before_plugin.onnx'
-        onnx.save_model(onnx_model,
-                      onnx_path_before_plugin,
-                      save_as_external_data=True,
-                      all_tensors_to_one_file=True,
-                      location="model_before_plugin_onnx.data",
-                      convert_attribute=True)
-        print(f"Saved ONNX before plugin to {onnx_path_before_plugin}")
-        # 必须从文件读取，gs 才能找到外部数据文件
-        onnx_model_with_data = onnx.load(onnx_path_before_plugin)
-        # 转换为 plugin
-        graph = gs.import_onnx(onnx_model_with_data)
+        graph = gs.import_onnx(onnx_model)
         graph = int4_dq_gemm_to_plugin(graph)
     if is_fp8_quantized(model):
         print(
@@ -318,19 +287,14 @@ def export_onnx(model,
         onnx_model = quantize_weights_to_mxfp8(onnx_model)
 
     print(
-        "Removing all the files in the output directory except for .json files and intermediate ONNX files"
+        "Removing all the files in the output directory except for .json files"
     )
-    #清理非.json files and intermediate files
     for file in os.listdir(output_dir):
         if file.endswith(".json"):
             continue
-        if file.startswith("model_before_plugin"):
-            continue
-        if file.startswith("model_raw"):
-            continue
         os.remove(os.path.join(output_dir, file))
 
-    # Save the model to the output directory (处理后的 ONNX)
+    # Save the model to the output directory
     onnx.save_model(onnx_model,
                     onnx_path,
                     save_as_external_data=True,
