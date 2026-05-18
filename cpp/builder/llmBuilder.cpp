@@ -286,6 +286,9 @@ bool LLMBuilder::setupLLMOptimizationProfiles(
     config.addOptimizationProfile(contextProfile);
     config.addOptimizationProfile(generationProfile);
 
+    //debug 
+    config.setProfilingVerbosity(nvinfer1::ProfilingVerbosity::kDETAILED);
+
     return true;
 }
 

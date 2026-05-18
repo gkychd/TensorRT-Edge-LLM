@@ -389,6 +389,14 @@ LLMEngineRunner::LLMEngineRunner(std::filesystem::path const& enginePath, std::f
         throw std::runtime_error("Failed to initialize LoRA weights to zero tensors");
     }
 
+    // ================================================================================
+    // test: build save graph.json
+    std::ofstream os("/workspace/Qwen3-0.6B/int4_awq/engines/profile/llm.engine.graph.json", std::ofstream::trunc);
+    mEngineInspector = std::unique_ptr<IEngineInspector>(mEngine->createEngineInspector());
+    std::string result = mEngineInspector->getEngineInformation(nvinfer1::LayerInformationFormat::kJSON);
+    os << result << std::flush;
+    // ================================================================================
+
     // Synchronize the stream to ensure all the operations have completed.
     CUDA_CHECK(cudaStreamSynchronize(stream));
 }

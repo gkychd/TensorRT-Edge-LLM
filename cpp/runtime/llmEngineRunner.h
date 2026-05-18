@@ -235,6 +235,7 @@ public:
 private:
     std::unique_ptr<nvinfer1::IRuntime> mRuntime;                      //!< TensorRT runtime
     std::unique_ptr<nvinfer1::ICudaEngine> mEngine;                    //!< TensorRT engine
+    std::unique_ptr<nvinfer1::IEngineInspector> mEngineInspector;                //!< Engine inspector
     rt::Tensor mExecContextMemory{};                                   //!< Device memory for the execution contexts
     std::unique_ptr<nvinfer1::IExecutionContext> mTRTExecutionContext; //!< Prefill and Generation execution context
 

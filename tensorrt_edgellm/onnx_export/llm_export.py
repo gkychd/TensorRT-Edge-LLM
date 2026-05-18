@@ -79,7 +79,7 @@ from ..llm_models.models.llm_model_trtnative import (Eagle3DraftModelTRTNative,
 from ..llm_models.models.qwen3_omni_talker import (
     create_qwen3_omni_dummy_inputs, export_qwen3_omni_submodel_to_onnx)
 from .config_export import export_llm_config
-from .onnx_utils import export_onnx
+from .onnx_utils_gai import export_onnx
 
 
 def save_d2t_for_eagle3_draft(draft_model: nn.Module, output_dir: str) -> None:

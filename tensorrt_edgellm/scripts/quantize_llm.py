@@ -52,8 +52,7 @@ def main() -> None:
                         type=str,
                         required=True,
                         help="Path to save the quantized model")
-    parser.add_argument(
-        "--quantization",
+    parser.add_argument("--quantization",
         type=str,
         required=False,
         choices=["fp8", "int4_awq", "nvfp4", "mxfp8", "int8_sq"],
